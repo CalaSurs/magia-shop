@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magia.lol — Juegos Online</title>
+<meta name="description" content="Magia.lol: juega gratis online. Catálogo de juegos HTML5 estilo Friv/Poki.">
+<style>
+  :root{
+    --bg:#0e0f12;--bg2:#14151b;--card:#17191f;--ink:#e9eefc;--muted:#9aa3b2;--pri:#3b82f6;--pri-2:#2563eb;
+    --radius:16px;--shadow:0 10px 30px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',sans-serif;background:linear-gradient(120deg,var(--bg),var(--bg2));color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+  header{position:sticky;top:0;background:rgba(14,15,18,.8);backdrop-filter:blur(8px);border-bottom:1px solid #1f2330;z-index:10}
+  .wrap{max-width:1200px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
+  .brand b{background:linear-gradient(90deg,#a78bfa,#60a5fa,#34d399);-webkit-background-clip:text;background-clip:text;color:transparent}
+  nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .tag{padding:8px 12px;border:1px solid #2a2f3d;border-radius:999px;color:var(--muted);cursor:pointer;font-size:.92rem}
+  .tag.active{background:var(--pri);border-color:var(--pri);color:#fff}
+  .hero{padding:36px 20px 0}
+  .hero h1{margin:0 0 8px;font-size:2rem}
+  .hero p{margin:0;color:var(--muted)}
+  .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .btn{background:var(--pri);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .search{flex:1;min-width:240px;background:#0f1117;border:1px solid #232736;border-radius:10px;display:flex;align-items:center;gap:8px;padding:10px 12px;color:#cbd5e1}
+  .search input{all:unset;flex:1}
+  main{flex:1}
+  .grid{display:grid;gap:16px;padding:22px 20px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));max-width:1200px;margin:0 auto}
+  .card{background:var(--card);border:1px solid #232736;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#1f2937,#0f172a);display:flex;align-items:center;justify-content:center;font-size:40px}
+  .meta{padding:10px 12px}
+  .title{font-weight:700;margin:0 0 6px;font-size:1rem;color:#e6ecff;line-height:1.2}
+  .kicker{font-size:.82rem;color:var(--muted);margin-bottom:10px}
+  .play{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .play a{display:inline-block;background:var(--pri);color:#fff;text-decoration:none;padding:9px 12px;border-radius:10px;font-weight:700}
+  .play a:hover{background:var(--pri-2)}
+  .pill{font-size:.75rem;padding:6px 8px;border-radius:999px;border:1px solid #2a2f3d;color:#b7c3d3}
+  footer{border-top:1px solid #1f2330;color:#8b93a6}
+  footer .wrap{padding:18px 20px}
+  /* helper for invisible links when user aún no creó el archivo */
+  .disabled{opacity:.55;pointer-events:none}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand">🎮 <b>Magia.lol</b> — Juegos Online</div>
+      <div class="actions">
+        <label class="search" title="Buscar juegos">
+          🔎
+          <input id="q" placeholder="Buscar: carrera, puzzle, motos…" aria-label="Buscar juegos">
+        </label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="tag active" data-cat="all">Todos</button>
+          <button class="tag" data-cat="accion">Acción</button>
+          <button class="tag" data-cat="carreras">Carreras</button>
+          <button class="tag" data-cat="puzzle">Puzzle</button>
+          <button class="tag" data-cat="deportes">Deportes</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero wrap">
+    <h1>Catálogo de juegos</h1>
+    <p>Haz clic en un juego para empezar. Agrega más creando <code>juego-2.html</code>, <code>juego-3.html</code>, etc. (solo copia el HTML del juego y cambia el <em>iframe</em>).</p>
+  </section>
+
+  <main>
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <footer>
+    <div class="wrap">© 2025 Magia.lol — Hecho con ❤️ y juegos HTML5</div>
+  </footer>
+
+<script>
+/* =======
+   MODELO DE DATOS: agrega/quita juegos acá.
+   - title: nombre visible
+   - slug: archivo del juego (cuando lo tengas creado)
+   - cat: categoría (usa una de: accion, carreras, puzzle, deportes)
+   - emoji: mini “thumbnail” sin imágenes externas
+   ======= */
+const GAMES = [
+  { title: "City Car Driver", slug: "/juego-1.html", cat: "carreras", emoji:"🚗" }, // ya creado
+  { title: "Moto X3M (demo)", slug: "/juego-2.html", cat: "carreras", emoji:"🏍️" },
+  { title: "Crazy Kick (demo)", slug: "/juego-3.html", cat: "deportes", emoji:"⚽" },
+  { title: "Zombie Survival (demo)", slug: "/juego-4.html", cat: "accion", emoji:"🧟" },
+  { title: "Puzzle Blocks (demo)", slug: "/juego-5.html", cat: "puzzle", emoji:"🧩" },
+  { title: "Space Shooter (demo)", slug: "/juego-6.html", cat: "accion", emoji:"🚀" },
+  { title: "2048 (demo)", slug: "/juego-7.html", cat: "puzzle", emoji:"🔢" },
+  { title: "Basket Shots (demo)", slug: "/juego-8.html", cat: "deportes", emoji:"🏀" },
+  { title: "Rally Sprint (demo)", slug: "/juego-9.html", cat: "carreras", emoji:"🏁" },
+];
+
+const grid = document.getElementById("grid");
+const q = document.getElementById("q");
+const tagButtons = [...document.querySelectorAll(".tag")];
+let activeCat = "all";
+
+function render(){
+  const text = (q.value || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");
+  grid.innerHTML = "";
+  GAMES.forEach(g => {
+    const matchCat = (activeCat === "all") || (g.cat === activeCat);
+    const hayTexto = !text || g.title.toLowerCase().includes(text);
+    if(!(matchCat && hayTexto)) return;
+    const aExiste = (g.slug && g.slug !== "#");
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="thumb">${g.emoji}</div>
+      <div class="meta">
+        <h3 class="title">${g.title}</h3>
+        <div class="kicker">Categoría: <span class="pill">${g.cat}</span></div>
+        <div class="play">
+          <a ${aExiste ? `href="${g.slug}"` : ""} class="${aExiste ? "" : "disabled"}">Jugar</a>
+          ${aExiste ? "" : `<span class="kicker">Crea <code>${g.slug || "juego-X.html"}</code></span>`}
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+q.addEventListener("input", render);
+tagButtons.forEach(b => b.addEventListener("click", () => {
+  tagButtons.forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  activeCat = b.dataset.cat;
+  render();
+}));
+render();
+</script>
+
+<!--
+INSTRUCCIONES:
+1) Este archivo es /index.html en la raíz de tu repo.
+2) Ya tienes /juego-1.html creado; el botón “Jugar” funciona.
+3) Para cada juego nuevo: duplica juego-1.html → juego-2.html, etc. Cambia el iframe.
+4) Luego edita el array GAMES arriba y apunta el slug al archivo que creaste.
+5) Si quieres organizar, puedes usar /games/juego-1.html y ajustar los slugs.
+-->
+</body>
+</html>
