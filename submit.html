@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publicar juego — Magia.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0d17;--panel:#111524;--ink:#f3f6ff;--muted:#aab3c5;--pri:#22d3ee;--good:#34d399;--bad:#f87171}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',system-ui,Segoe UI,Roboto,sans-serif;background:linear-gradient(120deg,#2d0b63,#041f49);color:var(--ink);min-height:100vh}
+  .wrap{max-width:900px;margin:0 auto;padding:20px}
+  header{padding:16px 0;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center}
+  a{color:inherit}
+  .btn{background:var(--pri);color:#05111b;border:none;border-radius:12px;padding:10px 14px;font-weight:800;text-decoration:none}
+  .panel{background:rgba(1,4,12,.55);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:16px;margin-top:16px}
+  label{display:block;margin:12px 0 6px;color:#e8edff}
+  input, select, textarea{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:#0b0f1a;color:#e8edff}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .hint{color:var(--muted);font-size:.9rem}
+  .ok{color:var(--good)} .err{color:var(--bad)}
+  .preview{margin-top:14px;border:1px dashed rgba(255,255,255,.2);border-radius:12px;padding:10px}
+  iframe{width:100%;aspect-ratio:16/9;border:none}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>🕹️ <strong>Magia.lol</strong> — Publicar juego</div>
+      <nav><a class="btn" href="/index.html">Volver al catálogo</a></nav>
+    </header>
+
+    <section class="panel">
+      <h2>Enviar tu juego (por iframe)</h2>
+      <p class="hint">Pega la URL del <code>src</code> del iframe (por ejemplo de GameMonetize). Ejemplo: <code>https://html5.gamemonetize.com/abc123/</code></p>
+      <div class="row">
+        <div>
+          <label>Nombre del juego</label>
+          <input id="title" placeholder="Ej: City Car Driver">
+        </div>
+        <div>
+          <label>Tu nombre/autor</label>
+          <input id="author" placeholder="Ej: Cala">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Categoría</label>
+          <select id="cat">
+            <option value="accion">Acción</option>
+            <option value="carreras">Carreras</option>
+            <option value="puzzle">Puzzle</option>
+            <option value="deportes">Deportes</option>
+          </select>
+        </div>
+        <div>
+          <label>Emoji (opcional)</label>
+          <input id="emoji" placeholder="🎮">
+        </div>
+      </div>
+      <label>URL del iframe (src)</label>
+      <input id="iframe" placeholder="https://html5.gamemonetize.com/abc123/">
+      <div class="hint">No pegues el <code>&lt;iframe&gt;</code> completo, solo la URL del <code>src</code>.</div>
+      <div class="preview" id="prevBox" hidden>
+        <div class="hint">Previsualización:</div>
+        <iframe id="prevFrame" loading="lazy" allow="fullscreen; autoplay"></iframe>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="previewBtn" type="button">Previsualizar</button>
+        <button class="btn" id="sendBtn" type="button">Publicar</button>
+        <span id="status" class="hint"></span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>¿Cómo funciona el guardado?</h3>
+      <ol class="hint">
+        <li>Esta web puede usar <strong>Firebase Firestore</strong> (gratis) para guardar tus envíos.</li>
+        <li>El administrador debe pegar su configuración en ambos archivos: <code>index.html</code> y <code>submit.html</code>, y poner <code>USE_FIREBASE=true</code>.</li>
+        <li>Una vez activado, lo que envíes aquí aparecerá automáticamente en el catálogo.</li>
+      </ol>
+    </section>
+  </div>
+
+<script>
+// --- misma configuración que index.html ---
+const USE_FIREBASE = false; // ← Cambia a true cuando pegues tu config
+const firebaseConfig = {
+  // apiKey: "TU_API_KEY",
+  // authDomain: "tu-proyecto.firebaseapp.com",
+  // projectId: "tu-proyecto",
+  // storageBucket: "tu-proyecto.appspot.com",
+  // messagingSenderId: "000000000000",
+  // appId: "1:000000000000:web:xxxxxxxxxxxxxx"
+};
+
+const qs = new URLSearchParams(location.hash.slice(1));
+const previewHash = qs.get("preview");
+if(previewHash){
+  document.getElementById("iframe").value = previewHash;
+  doPreview();
+}
+
+document.getElementById("previewBtn").addEventListener("click", doPreview);
+document.getElementById("sendBtn").addEventListener("click", doSend);
+
+function doPreview(){
+  const url = document.getElementById("iframe").value.trim();
+  const box = document.getElementById("prevBox");
+  const frame = document.getElementById("prevFrame");
+  if(!url) return;
+  frame.src = url;
+  box.hidden = false;
+}
+
+async function doSend(){
+  const s = (id)=>document.getElementById(id).value.trim();
+  const payload = {
+    title: s("title"),
+    author: s("author") || "Anónimo",
+    cat: s("cat") || "otros",
+    iframe: s("iframe"),
+    emoji: s("emoji") || "🆕",
+    createdAt: new Date()
+  };
+  const status = document.getElementById("status");
+
+  if(!payload.title || !payload.iframe){
+    status.innerHTML = "<span class='err'>Completa título e iframe.</span>";
+    return;
+  }
+  if(!USE_FIREBASE){
+    status.innerHTML = "<span class='err'>El guardado está desactivado. Pide al admin que habilite Firebase.</span>";
+    return;
+  }
+  try{
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js');
+    const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js');
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    await addDoc(collection(db,'games'), { ...payload, createdAt: serverTimestamp() });
+    status.innerHTML = "<span class='ok'>¡Publicado! Volvé al catálogo para verlo.</span>";
+  }catch(e){
+    console.error(e);
+    status.innerHTML = "<span class='err'>Error al guardar (revisa configuración).</span>";
+  }
+}
+</script>
+</body>
+</html>
